@@ -1,8 +1,7 @@
 <?php
 $subNav = array(
 	"Basic Data ; barang.php ; #509601;",
-        "Pelengkap ; pelengkap.php ; #509601;",
-        "Item Kit ; item-kit.php ; #509601;"
+        "Pelengkap ; pelengkap.php ; #509601;"
 );
 
 set_include_path("../");
@@ -10,12 +9,6 @@ include_once("inc/essentials.php");
 include_once("inc/functions.php");
 include_once("models/masterdata.php");
 include_once("pages/message.php");
-$golongan = golongan_load_data();
-$satuan_kekuatan = satuan_load_data('1');
-$kemasan  = satuan_load_data('0');
-$sediaan  = sediaan_load_data();
-$admr     = admr_load_data();
-$perundangan = perundangan_load_data();
 ?>
 
 <script type="text/javascript">
