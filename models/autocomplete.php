@@ -145,7 +145,7 @@ if ($method === 'get_detail_barang_by_ed') {
 if ($method === 'get_kemasan_barang') {
     $id = $_GET['id'];
     $rows = NULL;
-    $sql = mysql_query("select k.id, k.default_kemasan, k.id_kemasan, s.nama 
+    $sql = mysql_query("select k.id, k.default_kemasan, k.id_kemasan, s.nama, k.isi, k.isi_satuan 
         from kemasan k 
         join satuan s on (k.id_kemasan = s.id) 
         where k.id_barang = '$id' order by k.id desc");
@@ -159,7 +159,7 @@ if ($method === 'get_nomor_sp') {
     $sql = mysql_query("select p.*, s.nama as supplier 
         FROM pemesanan p 
         join supplier s on (p.id_supplier = s.id) 
-        where p.id not in (select id_pemesanan from penerimaan) and p.id like ('%$q%') order by locate('$q',p.id)");
+        where p.id not in (select id_pemesanan from penerimaan where id_pemesanan is not NULL) and p.id like ('%$q%') order by locate('$q',p.id)");
     $rows = array();
     while ($data = mysql_fetch_object($sql)) {
         $rows[] = $data;
