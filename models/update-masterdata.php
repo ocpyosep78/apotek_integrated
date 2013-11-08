@@ -13,7 +13,7 @@ if ($method === 'save_barang') {
     $formularium= $_POST['formularium'];
     $kekuatan   = $_POST['kekuatan'];
     $golongan   = ($_POST['golongan'] !== '')?$_POST['golongan']:'NULL';
-    $s_kekuatan = $_POST['s_sediaan'];
+    $s_kekuatan = ($_POST['s_sediaan'] !== '')?$_POST['s_sediaan']:'NULL';
     $sediaan    = ($_POST['sediaan'] !== '')?$_POST['sediaan']:'NULL';
     $admr       = $_POST['admr'];
     $generik    = $_POST['generik'];
@@ -174,8 +174,8 @@ if ($method === 'save_barang') {
                             margin_resep = '$margin_r[$no]',
                             diskon_persen = '$diskon[$no]',
                             diskon_rupiah = '".currencyToNumber($diskon_rp[$no])."',
-                            hj_non_resep = '$hj_nonresep[$no]',
-                            hj_resep = '$hj_resep[$no]'";
+                            hj_non_resep = '".currencyToNumber($hj_nonresep[$no])."',
+                            hj_resep = '".currencyToNumber($hj_resep[$no])."'";
                         //echo $query1;
                         mysql_query($query1);
                     }
@@ -217,6 +217,7 @@ if ($method === 'save_barang') {
             $sql.= ",image = '$NewFileName'";
         }
         $sql.="where id = '$id_barang'";
+        //echo "<pre>".$sql."</pre>";
         mysql_query($sql);
         mysql_query("update kemasan set default_kemasan = '0' where id_barang = '$id_barang'");
         $id = $id_barang;
@@ -306,8 +307,8 @@ if ($method === 'save_barang') {
                             margin_resep = '$margin_r[$no]',
                             diskon_persen = '$diskon[$no]',
                             diskon_rupiah = '".currencyToNumber($diskon_rp[$no])."',
-                            hj_non_resep = '$hj_nonresep[$no]',
-                            hj_resep = '$hj_resep[$no]'";
+                            hj_non_resep = '".currencyToNumber($hj_nonresep[$no])."',
+                            hj_resep = '".currencyToNumber($hj_resep[$no])."'";
                         //echo $query1;
                         mysql_query($query1);
                     }

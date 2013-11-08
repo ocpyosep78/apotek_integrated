@@ -31,9 +31,30 @@ $kemasan  = satuan_load_data('0');
 
 load_data_pemesanan();
 function removeMe(el) {
-    var parent = el.parentNode.parentNode;
-    parent.parentNode.removeChild(parent);
-    hitung_estimasi();
+    $('<div id=alert>Anda yakin akan menghapus data ini?</div>').dialog({
+        title: 'Konfirmasi Penghapusan',
+        autoOpen: true,
+        modal: true,
+        buttons: {
+            "OK": function() {
+                $('#alert').dialog().remove();
+                var parent = el.parentNode.parentNode;
+                parent.parentNode.removeChild(parent);
+                var jumlah = $('.tr_rows').length;
+                var col = 0;
+                for (i = 1; i <= jumlah; i++) {
+                    $('.tr_rows:eq('+col+')').children('td:eq(0)').html(i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(1)').children('.id_barang').attr('id','id_barang'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(2)').children('.kemasan').attr('id','kemasan'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(3)').children('.jumlah').attr('id','jumlah'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(4)').attr('id','subtotal'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(5)').children('.perundangan').attr('id','perundangan'+i);
+                    col++;
+                }
+                hitung_estimasi();
+            }
+        }
+    });
 }
 
 function hitung_detail_total(jml, jum, diskon_rupiah, diskon_persen, harga_jual, isi_satuan) {
@@ -64,7 +85,10 @@ function hitung_estimasi() {
     var jml_baris = $('.tr_rows').length;
     var estimasi = 0;
     for (i = 1; i <= jml_baris; i++) {
-        var subtotal = parseInt(currencyToNumber($('#subtotal'+i).html()));
+        var subtotal = parseFloat(currencyToNumber($('#subtotal'+i).html()));
+        if (isNaN(subtotal)) {
+            subtotal = 0;
+        }
         estimasi = estimasi + subtotal;
     }
     $('#estimasi').html(numberToCurrency(parseInt(estimasi)));
@@ -101,7 +125,13 @@ function add_new_rows(id_brg, nama_brg, jumlah, id_kemasan) {
 
 function cetak_sp(id_pemesanan) {
     var perundangan = $('#perundangan1').val();
-    window.open('pages/pemesanan-print.php?id='+id_pemesanan+'&perundangan='+perundangan, 'Pemesanan Cetak', 'width=300px, height=500px, scrollabars=1, resizable=1');
+    var wWidth = $(window).width();
+    var dWidth = wWidth * 0.3;
+    var wHeight= $(window).height();
+    var dHeight= wHeight * 1;
+    var x = screen.width/2 - dWidth/2;
+    var y = screen.height/2 - dHeight/2;
+    window.open('pages/pemesanan-print.php?id='+id_pemesanan+'&perundangan='+perundangan, 'Pemesanan Cetak', 'width='+dWidth+', height='+dHeight+', left='+x+',top='+y);
 }
 
 function form_add() {
@@ -276,13 +306,12 @@ function form_add() {
             type: 'POST',
             success: function(data) {
                 if (data.status === true) {
-                    alert_tambah('#supplier');
                     $('#supplier, #id_supplier').val('');
                     $('#no_sp').val(data.id_pemesanan);
                     $('#pesanan-list tbody').html('');
                     $('#estimasi').html('0');
-                    load_data_pemesanan();
                     cetak_sp(data.id);
+                    alert_refresh('Pemesanan berhasil di tambahkan !');
                 } else {
                     alert_edit();
                 }

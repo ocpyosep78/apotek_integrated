@@ -288,15 +288,16 @@ $('#reset').button({
     load_data_defecta();
 });
 
-function load_data_defecta(page, search, id) {
+function load_data_defecta(page, search, id, sort) {
     pg = page; src = search; id_barg = id;
     if (page === undefined) { var pg = ''; }
     if (search === undefined) { var src = ''; }
     if (id === undefined) { var id_barg = ''; }
+    if (sort === undefined) { sort = ''; }
     $.ajax({
         url: 'pages/defecta-list.php',
         cache: false,
-        data: 'page='+pg+'&search='+src+'&id_defecta='+id_barg,
+        data: 'page='+pg+'&search='+src+'&id_defecta='+id_barg+'&sort='+sort,
         success: function(data) {
             $('#result-defecta').html(data);
         }
@@ -309,7 +310,7 @@ function paging(page, tab, search) {
 
 function add_to_planning(id, page, nama) {
 $('<div id=alert>Anda yakin akan memasukkan barang '+nama+' ke rencana pemesanan ?</div>').dialog({
-    title: 'Konfirmasi Penghapusan',
+    title: 'Konfirmasi',
     autoOpen: true,
     modal: true,
     buttons: {

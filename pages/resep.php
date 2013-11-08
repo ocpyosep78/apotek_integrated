@@ -132,17 +132,17 @@ function addnoresep() {
     var jml_pakai   = $('#jmlpakai').val();
     var str = '<tr class="tr_rows">'+
                 '<td align=center>'+i+'</td>'+
-                '<td><input type=text name=no_r[] id=no_r'+i+' value="'+no_r+'" style="text-align: center;" /></td>'+
-                '<td>'+barang+' <input type=hidden name=id_barang[] id=id_barang'+i+' value="'+id_barang+'" style="text-align: center;" /></td>'+
-                '<td><input type=text name=jp[] id=jp'+i+' value="'+permintaan+'" style="text-align: center;" /></td>'+
-                '<td><input type=text name=jt[] id=jt'+i+' value="'+tebus+'" style="text-align: center;" /></td>'+
+                '<td><input type=text name=no_r[] id=no_r'+i+' class=no_r value="'+no_r+'" style="text-align: center;" /></td>'+
+                '<td>'+barang+' <input type=hidden name=id_barang[] id=id_barang'+i+' value="'+id_barang+'" class=id_barang style="text-align: center;" /></td>'+
+        /*3*/   '<td><input type=text name=jp[] id=jp'+i+' class=jp value="'+permintaan+'" style="text-align: center;" /></td>'+
+                '<td><input type=text name=jt[] id=jt'+i+' class=jt value="'+tebus+'" style="text-align: center;" /></td>'+
                 '<td align=center id=sisa'+i+'></td>'+
-                '<td><input type=text name=a[] id=a'+i+' value="'+a+'" style="text-align: right; width: 40%" /> X <input type=text name=p[] id=p'+i+' value="'+p+'" style="text-align: left; width: 40%" /></td>'+
-                '<td><input type=text name=it[] id=it'+i+' value="'+iterasi+'" style="text-align: center;" /></td>'+
-                '<td><input type=text name=dr[] id=dr'+i+' value="'+dosis_racik+'" style="text-align: center;" /></td>'+
-                '<td><input type=text name=jpi[] id=jpi'+i+' value="'+jml_pakai+'" style="text-align: center;" /></td>'+
-                '<td><input type=hidden name=id_tarif[] id=id_tarif'+i+' value="'+jasa_apt[0]+'" /> <input type=text name=jasa[] id=jasa'+i+' onkeyup=FormNum(this) value="'+numberToCurrency(jasa)+'" style="text-align: right;" /></td>'+
-                '<td><input type=text name=hrg_barang[] id=hrg_barang'+i+' value="" style="text-align: right;" /></td>'+
+                '<td><input type=text name=a[] id=a'+i+' value="'+a+'" class=a style="text-align: right; width: 40%" /> X <input type=text name=p[] id=p'+i+' value="'+p+'" class=p style="text-align: left; width: 40%" /></td>'+
+                '<td><input type=text name=it[] id=it'+i+' value="'+iterasi+'" class=it style="text-align: center;" /></td>'+
+                '<td><input type=text name=dr[] id=dr'+i+' value="'+dosis_racik+'" class=dr style="text-align: center;" /></td>'+
+                '<td><input type=text name=jpi[] id=jpi'+i+' value="'+jml_pakai+'" class=jpi style="text-align: center;" /></td>'+
+                '<td><input type=hidden name=id_tarif[] id=id_tarif'+i+' value="'+jasa_apt[0]+'" class=jasa_apt /> <input type=text name=jasa[] id=jasa'+i+' class=jasa onkeyup=FormNum(this) value="'+numberToCurrency(jasa)+'" style="text-align: right;" /></td>'+
+                '<td><input type=text name=hrg_barang[] id=hrg_barang'+i+' readonly class=hrg_barang style="text-align: right;" /></td>'+
                 '<td class=aksi><img onclick=removeMe(this); title="Klik untuk hapus" src="img/icons/delete.png" class=add_kemasan align=left /></td>'+
               '</tr>';
         $('#resep-list tbody').append(str);
@@ -157,23 +157,71 @@ function addnoresep() {
             }
         });
         $.ajax({
-        url: 'models/autocomplete.php?method=get_stok_sisa&id='+id_barang,
-        dataType: 'json',
-        cache: false,
-        success: function(data) {
-            if (data.sisa === null) {
-                sisa = '0';
-            } else {
-                sisa = data.sisa;
+            url: 'models/autocomplete.php?method=get_stok_sisa&id='+id_barang,
+            dataType: 'json',
+            cache: false,
+            success: function(data) {
+                if (data.sisa === null) {
+                    sisa = '0';
+                } else {
+                    sisa = data.sisa;
+                }
+                $('#sisa'+i).html(sisa);
             }
-            $('#sisa'+i).html(sisa);
-        }
-    });
+        });
+        check_alergi_obat_pasien(i, $('#id_pasien').val(), id_barang);
+}
+
+function check_alergi_obat_pasien(i, id_pasien, id_barang) {
+    if (id_pasien !== undefined && id_barang !== undefined) {
+        $.ajax({
+            url: 'models/autocomplete.php?method=check_alergi_obat_pasien&id_barang='+id_barang+'&id_pasien='+id_pasien,
+            cache: false,
+            dataType: 'json',
+            success: function(data) {
+                if (data.jumlah === '1') {
+                    alert_dinamic('HATI-HATI!, Pasien ini memiliki alergi terhadap obat '+data.nama+'!','');
+                    $('.tr_rows:eq('+(i-1)+')').css({background: "purple", color: "white"});
+                }
+            }
+        });
+    }
 }
 
 function removeMe(el) {
-    var parent = el.parentNode.parentNode;
-    parent.parentNode.removeChild(parent);
+$('<div id=alert>Anda yakin akan menghapus data ini?</div>').dialog({
+        title: 'Konfirmasi Penghapusan',
+        autoOpen: true,
+        modal: true,
+        buttons: {
+            "OK": function() {
+                $('#alert').dialog().remove();
+                var parent = el.parentNode.parentNode;
+                parent.parentNode.removeChild(parent);
+                var jumlah = $('.tr_rows').length;
+                var col = 0;
+
+                for (i = 1; i <= jumlah; i++) {
+                    $('.tr_rows:eq('+col+')').children('td:eq(0)').html(i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(1)').children('.no_r').attr('id','no_r'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(2)').children('.id_barang').attr('id','id_barang'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(3)').children('.jp').attr('id','jp'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(4)').children('.jt').attr('id','jt'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(5)').attr('id','sisa'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(6)').children('.a').attr('id','a'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(6)').children('.p').attr('id','p'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(7)').children('.it').attr('id','it'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(8)').children('.dr').attr('id','dr'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(9)').children('.jpi').attr('id','jpi'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(10)').children('.jasa_apt').attr('id','id_tarif'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(10)').children('.jasa').attr('id','jasa'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(11)').children('.hrg_barang').attr('id','hrg_barang'+i);
+                    col++;
+                }
+                total_perkiraan_resep();
+            }
+        }
+});
 }
 
 function total_perkiraan_resep() {

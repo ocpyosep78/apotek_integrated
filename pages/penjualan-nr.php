@@ -46,6 +46,22 @@ function hitung_detail_total(jml, jum, diskon_rupiah, diskon_persen, harga_jual,
     hitung_total_penjualan();
 }
 
+function check_alergi_obat_pasien(i, id_pasien, id_barang) {
+    if (id_pasien !== undefined && id_barang !== undefined) {
+        $.ajax({
+            url: 'models/autocomplete.php?method=check_alergi_obat_pasien&id_barang='+id_barang+'&id_pasien='+id_pasien,
+            cache: false,
+            dataType: 'json',
+            success: function(data) {
+                if (data.jumlah === '1') {
+                    alert_dinamic('HATI-HATI!, Pasien ini memiliki alergi terhadap obat '+data.nama+'!','');
+                    $('.tr_rows:eq('+(i-1)+')').css({background: "purple", color: "white"});
+                }
+            }
+        });
+    }
+}
+
 function hitung_total_penjualan() {
     var panjang   = $('.tr_rows').length; // banyaknya baris data
     var total     = 0;
@@ -112,7 +128,7 @@ function add_new_rows(id_brg, nama_brg, jumlah, id_packing) {
                 '<td>&nbsp;'+nama_brg+' <input type=hidden name=id_barang[] value="'+id_brg+'" class=id_barang id=id_barang'+jml+' /></td>'+
                 '<td><input type=text name=jumlah[] id=jumlah'+jml+' value="'+jumlah+'" class=jumlah style="text-align: center;" /></td>'+
                 '<td><input type=hidden name=harga_jual[] id=harga_jual'+jml+' class=harga_jual /> <input type=hidden name=isi_satuan[] id=isi_satuan'+jml+' /> <select name=kemasan[] class=kemasan id=kemasan'+jml+'></select></td>'+
-                '<td align=center><select name=ed[] class=ed id=ed'+jml+' class=ed></select></td>'+
+                '<td align=center><select name=ed[] class=ed id=ed'+jml+'></select></td>'+
                 '<td align=center id=sisa'+jml+'></td>'+
                 '<td align=right id=hargajual'+jml+'></td>'+
                 '<td><input type=text name=diskon_rupiah[] class=diskon_rupiah style="text-align: right;" id=diskon_rupiah'+jml+' value="0" onblur="FormNum(this)" /></td>'+
@@ -121,6 +137,7 @@ function add_new_rows(id_brg, nama_brg, jumlah, id_packing) {
                 '<td align=center><img onclick=removeMe(this); title="Klik untuk hapus" src="img/icons/delete.png" class=add_kemasan align=left /></td>'+
               '</tr>';
     $('#pesanan-list tbody').append(str);
+    check_alergi_obat_pasien(jml, $('#id_customer').val(), id_brg);
     $.getJSON('models/autocomplete.php?method=get_kemasan_barang&id='+id_brg, function(data){
         $('#kemasan'+jml).html('');
         $.each(data, function (index, value) {
@@ -130,9 +147,14 @@ function add_new_rows(id_brg, nama_brg, jumlah, id_packing) {
     });
     $.getJSON('models/autocomplete.php?method=get_expiry_barang&id='+id_brg, function(data){
         $('#ed'+jml).html('');
+        var jmled = 0;
         $.each(data, function (index, value) {
             $('#ed'+jml).append("<option value='"+value.ed+"'>"+datefmysql(value.ed)+"</option>");
+            jmled++;
         });
+        if (jmled === 0) {
+            $('#ed'+jml).append("<option value=''></option>");
+        }
     });
     $.ajax({
         url: 'models/autocomplete.php?method=get_detail_harga_barang&id='+id_packing+'&jumlah='+jumlah,
@@ -467,6 +489,12 @@ function form_add() {
                 hitung_total_penjualan();
             });
         }
+        var jml = $('.tr_rows').length;
+        if (jml > 0) {
+            for (i = 1; i <= jml; i++) {
+                check_alergi_obat_pasien(i, data.id, $('#id_barang'+i).val());
+            }
+        }
         hitung_total_penjualan();
     });
     
@@ -556,6 +584,7 @@ function form_add() {
                     $('#barang').focus();
                     $.cookie('session', 'true');
                     $.cookie('formbayar', 'false');
+                    alert_refresh('Penjualan berhasil disimpan');
                     cetak_struk(data.id);
                     $('#form_penjualannr').dialog().remove();
                     //alert_tambah('#barcode');

@@ -1,8 +1,7 @@
 <?php
 $subNav = array(
 	"Basic Data ; barang.php ; #509601;",
-        "Pelengkap ; pelengkap.php ; #509601;",
-        "Item Kit ; item-kit.php ; #509601;"
+        "Pelengkap ; pelengkap.php ; #509601;"
 );
 
 set_include_path("../");
@@ -222,6 +221,10 @@ function hitung_hja() {
     var rp_r    = hna+(hna*(mar_r/100));
     $('#margin_nr_rp').val(numberToCurrency(parseInt(rp_nr)));
     $('#margin_r_rp').val(numberToCurrency(parseInt(rp_r)));
+}
+
+function set_margin(i,j) {
+    
 }
 
 function form_add() {
@@ -530,6 +533,7 @@ function edit_barang(str) {
     });
     $('#fda_pregnan').val(arr[27]);
     $('#fda_lactacy').val(arr[28]);
+    $('#perundangan').val(arr[29]);
     hitung_hja();
 }
 function delete_barang(id, page) {

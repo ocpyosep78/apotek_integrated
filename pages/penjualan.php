@@ -90,25 +90,51 @@ function hitung_total_penjualan() {
 }
 
 function removeMe(el) {
-    var parent = el.parentNode.parentNode;
-    parent.parentNode.removeChild(parent);
-    var jumlah = $('.tr_rows').length;
-    var col = 0;
-    for (i = 1; i <= jumlah; i++) {
-        $('.tr_rows:eq('+col+')').children('td:eq(0)').html(i);
-        $('.tr_rows:eq('+col+')').children('td:eq(1)').children('.id_barang').attr('id','id_barang'+i);
-        $('.tr_rows:eq('+col+')').children('td:eq(2)').children('.jumlah').attr('id','jumlah'+i);
-        $('.tr_rows:eq('+col+')').children('td:eq(3)').children('.harga_jual').attr('id','harga_jual'+i);
-        $('.tr_rows:eq('+col+')').children('td:eq(3)').children('.kemasan').attr('id','kemasan'+i);
-        $('.tr_rows:eq('+col+')').children('td:eq(4)').children('.ed').attr('id','ed'+i);
-        $('.tr_rows:eq('+col+')').children('td:eq(5)').attr('id','sisa'+i);
-        $('.tr_rows:eq('+col+')').children('td:eq(6)').attr('id','hargajual'+i);
-        $('.tr_rows:eq('+col+')').children('td:eq(7)').children('.diskon_rupiah').attr('id','diskon_rupiah'+i);
-        $('.tr_rows:eq('+col+')').children('td:eq(8)').children('.diskon_persen').attr('id','diskon_persen'+i);
-        $('.tr_rows:eq('+col+')').children('td:eq(9)').attr('id','subtotal'+i);
-        col++;
+    $('<div id=alert>Anda yakin akan menghapus data ini?</div>').dialog({
+        title: 'Konfirmasi Penghapusan',
+        autoOpen: true,
+        modal: true,
+        buttons: {
+            "OK": function() {
+                $('#alert').dialog().remove();
+                var parent = el.parentNode.parentNode;
+                parent.parentNode.removeChild(parent);
+                var jumlah = $('.tr_rows').length;
+                var col = 0;
+                for (i = 1; i <= jumlah; i++) {
+                    $('.tr_rows:eq('+col+')').children('td:eq(0)').html(i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(1)').children('.id_barang').attr('id','id_barang'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(2)').children('.jumlah').attr('id','jumlah'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(3)').children('.harga_jual').attr('id','harga_jual'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(3)').children('.kemasan').attr('id','kemasan'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(4)').children('.ed').attr('id','ed'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(5)').attr('id','sisa'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(6)').attr('id','hargajual'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(7)').children('.diskon_rupiah').attr('id','diskon_rupiah'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(8)').children('.diskon_persen').attr('id','diskon_persen'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(9)').attr('id','subtotal'+i);
+                    col++;
+                }
+                hitung_total_penjualan();
+            }
+        }
+    });
+}
+
+function check_alergi_obat_pasien(i, id_pasien, id_barang) {
+    if (id_pasien !== undefined && id_barang !== undefined) {
+        $.ajax({
+            url: 'models/autocomplete.php?method=check_alergi_obat_pasien&id_barang='+id_barang+'&id_pasien='+id_pasien,
+            cache: false,
+            dataType: 'json',
+            success: function(data) {
+                if (data.jumlah === '1') {
+                    alert_dinamic('HATI-HATI!, Pasien ini memiliki alergi terhadap obat '+data.nama+'!','');
+                    $('.tr_rows:eq('+(i-1)+')').css({background: "purple", color: "white"});
+                }
+            }
+        });
     }
-    hitung_total_penjualan();
 }
 
 function add_new_rows(id_brg, nama_brg, jumlah, id_packing) {
@@ -119,7 +145,7 @@ function add_new_rows(id_brg, nama_brg, jumlah, id_packing) {
                 '<td>&nbsp;'+nama_brg+' <input type=hidden name=id_barang[] value="'+id_brg+'" class=id_barang id=id_barang'+jml+' /></td>'+
                 '<td><input type=text name=jumlah[] class=jumlah id=jumlah'+jml+' value="'+jumlah+'" style="text-align: center;" /></td>'+
                 '<td><input type=hidden name=harga_jual[] id=harga_jual'+jml+' class=harga_jual /> <select name=kemasan[] class=kemasan id=kemasan'+jml+'></select></td>'+
-                '<td align=center><select name=ed[] class=ed id=ed'+jml+' class=ed></select></td>'+
+                '<td align=center><select name=ed[] class=ed id=ed'+jml+'></select></td>'+
                 '<td align=center id=sisa'+jml+'></td>'+
                 '<td align=right id=hargajual'+jml+'></td>'+
                 '<td><input type=text name=diskon_rupiah[] class=diskon_rupiah style="text-align: right;" id=diskon_rupiah'+jml+' value="0" onblur="FormNum(this)" /></td>'+
@@ -135,6 +161,17 @@ function add_new_rows(id_brg, nama_brg, jumlah, id_packing) {
             if (value.default_kemasan === '1') { $('#kemasan'+jml).val(value.id); }
         });
     });
+    $.getJSON('models/autocomplete.php?method=get_expiry_barang&id='+id_brg, function(data){
+        $('#ed'+jml).html('');
+        var jmled = 0;
+        $.each(data, function (index, value) {
+            $('#ed'+jml).append("<option value='"+value.ed+"'>"+datefmysql(value.ed)+"</option>");
+            jmled++;
+        });
+        if (jmled === 0) {
+            $('#ed'+jml).append("<option value=''></option>");
+        }
+    });
     $.ajax({
         url: 'models/autocomplete.php?method=get_detail_harga_barang_resep&id='+id_brg+'&jumlah='+jumlah,
         dataType: 'json',
@@ -144,6 +181,7 @@ function add_new_rows(id_brg, nama_brg, jumlah, id_packing) {
             hitung_total_penjualan();
         }
     });
+    check_alergi_obat_pasien(i, $('#id_customer').val(), id_brg);
     $('#ed'+jml).datepicker({
         changeYear: true,
         changeMonth: true,
@@ -580,7 +618,7 @@ function form_add() {
                     $('#form_penjualan').dialog().remove();
                     //location.reload();
                     cetak_struk(data.id);
-                    
+                    alert_refresh('Data penjualan berhasil disimpan!');
                     //alert_tambah('#noresep');
                 }
             }

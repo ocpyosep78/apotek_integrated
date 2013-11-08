@@ -31,9 +31,30 @@ $kemasan  = satuan_load_data('0');
 
 load_data_pemesanan();
 function removeMe(el) {
-    var parent = el.parentNode.parentNode;
-    parent.parentNode.removeChild(parent);
-    hitung_estimasi();
+    $('<div id=alert>Anda yakin akan menghapus data ini?</div>').dialog({
+        title: 'Konfirmasi Penghapusan',
+        autoOpen: true,
+        modal: true,
+        buttons: {
+            "OK": function() {
+                $('#alert').dialog().remove();
+                var parent = el.parentNode.parentNode;
+                parent.parentNode.removeChild(parent);
+                var jumlah = $('.tr_rows').length;
+                var col = 0;
+                for (i = 1; i <= jumlah; i++) {
+                    $('.tr_rows:eq('+col+')').children('td:eq(0)').html(i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(1)').children('.id_barang').attr('id','id_barang'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(2)').children('.kemasan').attr('id','kemasan'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(3)').children('.jumlah').attr('id','jumlah'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(4)').attr('id','subtotal'+i);
+                    $('.tr_rows:eq('+col+')').children('td:eq(5)').children('.perundangan').attr('id','perundangan'+i);
+                    col++;
+                }
+                hitung_estimasi();
+            }
+        }
+    });
 }
 
 function hitung_estimasi() {
@@ -41,6 +62,9 @@ function hitung_estimasi() {
     var estimasi = 0;
     for (i = 1; i <= jml_baris; i++) {
         var subtotal = parseInt(currencyToNumber($('#subtotal'+i).html()));
+        if (isNaN(subtotal)) {
+            subtotal = 0;
+        }
         estimasi = estimasi + subtotal;
     }
     $('#estimasi').html(numberToCurrency(parseInt(estimasi)));
@@ -55,10 +79,10 @@ function add_new_rows(id_brg, nama_brg, jumlah, id_kemasan) {
     var str = '<tr class="tr_rows">'+
                 '<td align=center>'+jml+'</td>'+
                 '<td>&nbsp;'+nama_brg+' <input type=hidden name=id_barang[] value="'+id_brg+'" class=id_barang id=id_barang'+jml+' /></td>'+
-                '<td align=center>'+kemasan+'<input type=hidden name=kemasan[] id=kemasan'+jml+' value="'+id_kemasan+'" /></td>'+
-                '<td><input type=text name=jumlah[] id=jumlah'+jml+' value="'+jumlah+'" size=10 style="text-align: center;" /></td>'+
+                '<td align=center>'+kemasan+'<input type=hidden name=kemasan[] id=kemasan'+jml+' value="'+id_kemasan+'" class=kemasan /></td>'+
+                '<td><input type=text name=jumlah[] id=jumlah'+jml+' value="'+jumlah+'" class=jumlah size=10 style="text-align: center;" /></td>'+
                 '<td align=right id=subtotal'+jml+'></td>'+
-                '<td align=center><input type=hidden id=perundangan'+jml+' /><img onclick=removeMe(this); title="Klik untuk hapus" src="img/icons/delete.png" class=add_kemasan align=left /></td>'+
+                '<td align=center><input type=hidden class=perundangan id=perundangan'+jml+' /><img onclick=removeMe(this); title="Klik untuk hapus" src="img/icons/delete.png" class=add_kemasan align=left /></td>'+
               '</tr>';
     $('#pesanan-list tbody').append(str);
     $.ajax({

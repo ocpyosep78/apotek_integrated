@@ -89,7 +89,7 @@ function penerimaan_load_data($param) {
         join kemasan km on (dp.id_kemasan = km.id)
         join satuan stn on (stn.id = km.id_kemasan)
         join barang b on (km.id_barang = b.id)
-        join satuan st on (b.satuan_kekuatan = st.id)
+        left join satuan st on (b.satuan_kekuatan = st.id)
         left join supplier s on (p.id_supplier = s.id)
         left join users u on (p.id_users = u.id)
         left join karyawan k on (u.id_karyawan = k.id)
@@ -407,7 +407,8 @@ function penjualan_nr_load_data($param) {
     
     $sql = "select p.*, date(p.waktu) as tanggal, pl.nama as customer, a.nama as asuransi,
         (select sum(bayar) from detail_bayar_penjualan where id_penjualan = p.id) as terbayar,
-        concat_ws(' ',b.nama,b.kekuatan,s.nama) as nama_barang, st.nama as kemasan, dp.qty, dp.harga_jual, (dp.harga_jual*dp.qty) as subtotal
+        concat_ws(' ',b.nama,b.kekuatan,s.nama) as nama_barang, st.nama as kemasan, dp.qty, dp.harga_jual, 
+        (dp.harga_jual*dp.qty) as subtotal, k.isi_satuan
         from penjualan p
         join detail_penjualan dp on (p.id = dp.id_penjualan)
         join kemasan k on (k.id = dp.id_kemasan)
@@ -626,15 +627,12 @@ function pemeriksaan_load_data($param) {
         $q.=" and p.id = '".$param['id']."'";
     }
     $limit = " limit ".$param['start'].", ".$param['limit']."";
-    $sql = "select p.*, pl.nama as pasien, d.nama as dokter, py.topik, py.sub_kode, tr.id as id_tarif, tr.nama as tarif, t.nominal from pemeriksaan p
-        join pendaftaran pd on (p.id_pendaftaran = pd.id)
-        join pelanggan pl on (pd.id_pelanggan = pl.id)
-        join dokter d on (p.id_dokter = d.id)
-        left join diagnosis dg on (p.id = dg.id_pemeriksaan)
-        left join penyakit py on (dg.id_penyakit = py.id)
-        left join tindakan t on (p.id = t.id_pemeriksaan)
-        left join tarif tr on (t.id_tarif = tr.id)
-        where p.id is not NULL $q order by p.tanggal desc";
+    $sql = "select p.*, pl.nama as pasien, sp.jumlah, sp.keterangan, CONCAT_WS(' ',b.nama, b.kekuatan, s.nama) as nama_barang from pemeriksaan p
+        join pelanggan pl on (p.id_pasien = pl.id)
+        left join saran_pengobatan sp on (p.id = sp.id_pemeriksaan)
+        left join barang b on (sp.id_barang = b.id)
+        left join satuan s on (b.satuan_kekuatan = s.id)
+        where p.id is NOT NULL";
     
     $query = mysql_query($sql.$limit);
     $data = array();
@@ -866,15 +864,15 @@ function retur_penjualan_load_data($param) {
         $q.="and rp.id = '".$param['id']."' ";
     }
     $limit = " limit ".$param['start'].", ".$param['limit']."";
-    $sql = "select rp.waktu, st.nama as kemasan, b.nama as barang, b.kekuatan, 
+    $sql = "select rp.id_penjualan, rp.total, rp.waktu, st.nama as kemasan, b.nama as barang, b.kekuatan, 
         stn.nama as satuan, dp.* from retur_penjualan rp
-        join detail_retur_penjualan dp on (rp.id = dp.id_penjualan)
+        join detail_retur_penjualan dp on (rp.id = dp.id_retur_penjualan)
         join kemasan k on (k.id = dp.id_kemasan)
         join barang b on (b.id = k.id_barang)
-        join satuan st on (st.id = k.id_kemasan)
+        left join satuan st on (st.id = k.id_kemasan)
         left join satuan stn on (stn.id = b.satuan_kekuatan)
         where rp.id is not NULL $q order by rp.id";
-    //echo $sql;
+    //echo "<pre>".$sql."</pre>";
     $query = mysql_query($sql.$limit);
     $data = array();
     while ($row = mysql_fetch_object($query)) {
@@ -923,7 +921,8 @@ function pendapatan_lain_lain_load_data($awal, $akhir) {
 }
 
 function hna_load_data($awal, $akhir) {
-    $sql = "select IFNULL(sum(b.hna*s.keluar),'0') as total_hna from stok s join barang b on (s.id_barang = b.id) where transaksi like ('Penjualan%') and date(waktu) between '".  date2mysql($awal)."' and '".  date2mysql($akhir)."'";
+    $sql = "select IFNULL(sum(dp.hna*dp.qty),'0') as total_hna from detail_penjualan dp join penjualan p on (p.id = dp.id_penjualan) where date(p.waktu) between '".  date2mysql($awal)."' and '".  date2mysql($akhir)."'";
+    //echo $sql;
     $row = mysql_fetch_object(mysql_query($sql));
     return $row;
 }

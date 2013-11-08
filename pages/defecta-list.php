@@ -31,7 +31,8 @@ include_once '../inc/functions.php';
         'id' => $_GET['id_defecta'],
         'limit' => $limit,
         'start' => $offset,
-        'search' => $_GET['search']
+        'search' => $_GET['search'],
+        'sort' => $_GET['sort']
     );
     $list_data = load_data_defecta($param);
     $master_defecta = $list_data['data'];

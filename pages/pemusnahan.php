@@ -77,7 +77,13 @@ function add_new_rows(id_brg, nama_brg, jumlah, id_kemasan) {
 
 function cetak_sp(id_pemusnahan) {
     var perundangan = $('#perundangan1').val();
-    window.open('pages/pemusnahan-print.php?id='+id_pemusnahan+'&perundangan='+perundangan, 'pemusnahan Cetak', 'width=300px, height=500px, scrollabars=1, resizable=1');
+    var wWidth = $(window).width();
+    var dWidth = wWidth * 0.3;
+    var wHeight= $(window).height();
+    var dHeight= wHeight * 1;
+    var x = screen.width/2 - dWidth/2;
+    var y = screen.height/2 - dHeight/2;
+    window.open('pages/pemusnahan-print.php?id='+id_pemusnahan+'&perundangan='+perundangan, 'pemusnahan Cetak', 'width='+dWidth+', height='+dHeight+', left='+x+',top='+y);
 }
 
 function form_add() {

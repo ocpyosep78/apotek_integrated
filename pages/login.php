@@ -28,6 +28,9 @@ $(function() {
         if ($('#password').val() === '') {
             $('#password').focus(); return false;
         }
+        if ($('#shift').val() === '') {
+            $('#shift').focus(); return false;
+        }
         $.ajax({
             url: $(this).attr('action'),
             data: $(this).serialize(),
@@ -77,7 +80,7 @@ window.onload = displayTime;
 <div class="body-login">
     <form action="../models/autocomplete.php?method=login" method="post" id="formlogin">
         <div class="wrapper">
-            <img src="../img/icons/user-login.png" align="left" />
+            <img src="../img/icons/user-login.png" width="137px" align="left" />
             <h1>Login Apotek <img src="../themes/theme_default/img/primary/loader.gif" align="right" id="loader" /></h1>
             <input type="text" name="username" id="username" placeholder="Username ..." size="50" autocomplete="off" />
             <input type="password" name="password" id="password" placeholder="Password ..." size="50" autocomplete="off" /><br/>

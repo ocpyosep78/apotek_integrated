@@ -5,7 +5,7 @@ $siteTitle = 'Metro Apotek'; /* will be displayed above the url-bar / in tab / o
 $siteName = 'Metro Apotek'; /* The biggest title on your homepage */
 $siteDesc ='Sistem Informasi Management Operasional Apotek'; /* subtitle on your homepage */
 $siteTitleHome = 'Home'; // will be displayed above the url-ba / in tab / in google when the home-page is open
-$siteFooter = '© mycss';
+$siteFooter = '&nbsp; © A.Fabianski';
 
 $siteMetaDesc = 'A description of your site for Google here';
 $siteMetaKeywords = 'Some, keywords, seperated, by, commas, here, max 10';
